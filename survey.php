@@ -1,4 +1,5 @@
 <?php
+date_default_timezone_set('Europe/Kyiv');
 if (isset($_POST['name'])) {
     $time = date('d.m.Y H:i:s');
 
@@ -11,6 +12,11 @@ if (isset($_POST['name'])) {
 
     if (!is_dir('survey')) mkdir('survey');
     file_put_contents('survey/' . date('Y-m-d_H-i-s') . '.txt', $text);
+
+    // відповідь для JavaScript, і далі сторінку не виводимо
+    echo "<p>Дякуємо, " . htmlspecialchars($_POST['name']) . "!</p>";
+    echo "<p>Дата і час заповнення: <b>$time</b></p>";
+    exit;
 }
 ?>
 <!DOCTYPE html>
@@ -24,41 +30,53 @@ if (isset($_POST['name'])) {
     <h2>Iron Gym</h2>
     <ul class="menu">
         <li><a href="index.html">Головна</a></li>
-            <li><a href="schedule.html">Графік</a></li>
-            <li><a href="price.html">Ціни</a></li>
-            <li><a href="animation.html">Анімація JS</a></li>
-            <li><a href="game.html">Міні-гра JS</a></li>
-            <li><a href="survey.php">Опитування</a></li>
+        <li><a href="schedule.html">Графік</a></li>
+        <li><a href="price.html">Ціни</a></li>
+        <li><a href="animation.html">Анімація JS</a></li>
+        <li><a href="game.html">Міні-гра JS</a></li>
+        <li><a href="survey.php">Опитування</a></li>
+        <li><a href="jokes.html">Жарти</a></li>
+        <li><a href="table.html">Таблиця</a></li>
     </ul>
     <hr>
 
-    <div class="main">
+    <div class="main" style="width:auto">
         <h1>Опитування</h1>
-    
-        <?php if (isset($_POST['name'])): ?>
-            <p>Дякуємо, <?= htmlspecialchars($_POST['name']) ?>!</p>
-            <p>Дата і час заповнення: <b><?= $time ?></b></p>
-        <?php else: ?>
-            <form method="POST">
-                <p>Імʼя: <input name="name" required></p>
-                <p>Email: <input name="email" type="email" required></p>
 
-                <p>1. Як часто ви тренуєтесь?</p>
-                <input type="radio" name="q1" value="Рідко" required> Рідко<br>
-                <input type="radio" name="q1" value="Часто"> Часто<br>
+        <div id="result"></div>
 
-                <p>2. Яка ваша мета?</p>
-                <select name="q2">
-                    <option>Набір маси</option>
-                    <option>Схуднення</option>
-                </select>
+        <form id="form">
+            <p>Імʼя: <input name="name" required></p>
+            <p>Email: <input name="email" type="email" required></p>
 
-                <p>3. Ваші побажання:</p>
-                <textarea name="q3"></textarea>
+            <p>1. Як часто ви тренуєтесь?</p>
+            <input type="radio" name="q1" value="Рідко" required> Рідко<br>
+            <input type="radio" name="q1" value="Часто"> Часто<br>
 
-                <p><button>Надіслати</button></p>
-            </form>
-        <?php endif; ?>
+            <p>2. Яка ваша мета?</p>
+            <select name="q2">
+                <option>Набір маси</option>
+                <option>Схуднення</option>
+            </select>
+
+            <p>3. Ваші побажання:</p>
+            <textarea name="q3"></textarea>
+
+            <p><button>Надіслати</button></p>
+        </form>
     </div>
+
+    <script>
+        document.getElementById('form').onsubmit = function (e) {
+            e.preventDefault();                  // не перезавантажувати сторінку
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'survey.php');
+            xhr.onload = function () {
+                document.getElementById('form').style.display = 'none';
+                document.getElementById('result').innerHTML = xhr.responseText;
+            };
+            xhr.send(new FormData(this));        // збирає всі поля форми
+        };
+    </script>
 </body>
 </html>
